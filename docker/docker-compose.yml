@@ -1,7 +1,4 @@
-version: "3.9"
-
 services:
-
   db:
     image: postgres:16
     container_name: pfa-db
@@ -17,97 +14,104 @@ services:
     networks:
       - pfa-net
 
-
   authservice:
     build:
       context: ./Authservice
+      dockerfile: Dockerfile
     container_name: authservice
-    environment:
-      ASPNETCORE_ENVIRONMENT: Docker
-      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=pfa_db;Username=pfa_user;Password=pfa_pass"
     depends_on:
       - db
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=pfa_db;Username=pfa_user;Password=pfa_pass"
     ports:
       - "8080:8080"
     networks:
       - pfa-net
 
-
   userprofileservice:
     build:
       context: ./Userprofileservice
+      dockerfile: Dockerfile
     container_name: userprofileservice
-    environment:
-      ASPNETCORE_ENVIRONMENT: Docker
-      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=pfa_db;Username=pfa_user;Password=pfa_pass"
     depends_on:
       - db
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=pfa_db;Username=pfa_user;Password=pfa_pass"
     ports:
       - "8083:8080"
     networks:
       - pfa-net
 
-
   messagingservice:
     build:
       context: ./Messagingservice
+      dockerfile: Dockerfile
     container_name: messagingservice
-    environment:
-      ASPNETCORE_ENVIRONMENT: Docker
-      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=pfa_db;Username=pfa_user;Password=pfa_pass"
     depends_on:
       - db
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=pfa_db;Username=pfa_user;Password=pfa_pass"
     ports:
       - "8084:8080"
     networks:
       - pfa-net
 
-
   projectservice:
     build:
       context: ./Projectservice
+      dockerfile: Dockerfile
     container_name: projectservice
-    environment:
-      DATABASE_URL: "postgresql://pfa_user:pfa_pass@db:5432/pfa_db?serverVersion=16&charset=utf8"
     depends_on:
       - db
+    environment:
+      DATABASE_URL: "postgres://pfa_user:pfa_pass@db:5432/pfa_db"
     ports:
       - "8081:8081"
     networks:
       - pfa-net
 
-
-  matching-spring:
-    build:
-      context: ./Matching-spring
-    container_name: matching-spring
-    environment:
-      SPRING_DATASOURCE_URL: "jdbc:postgresql://db:5432/pfa_db"
-      SPRING_DATASOURCE_USERNAME: "pfa_user"
-      SPRING_DATASOURCE_PASSWORD: "pfa_pass"
-      PYTHON_MATCHING_URL: "http://matching-python:8000"
-    depends_on:
-      - db
-      - matching-python
-    ports:
-      - "8082:8082"
-    networks:
-      - pfa-net
-
-
   matching-python:
     build:
       context: ./Matching-python
+      dockerfile: Dockerfile
     container_name: matching-python
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: "postgres://pfa_user:pfa_pass@db:5432/pfa_db"
     ports:
       - "8000:8000"
     networks:
       - pfa-net
 
+  # 👉 À activer plus tard, quand tu auras vraiment le projet Spring Boot compilé en JAR
+  # matching-spring:
+  #   build:
+  #     context: ./Matching-spring
+  #     dockerfile: Dockerfile
+  #   container_name: matching-spring
+  #   depends_on:
+  #     - db
+  #     - matching-python
+  #   environment:
+  #     SPRING_DATASOURCE_URL: "jdbc:postgresql://db:5432/pfa_db"
+  #     SPRING_DATASOURCE_USERNAME: pfa_user
+  #     SPRING_DATASOURCE_PASSWORD: pfa_pass
+  #     PYTHON_MATCHING_URL: "http://matching-python:8000"
+  #   ports:
+  #     - "8082:8082"
+  #   networks:
+  #     - pfa-net
 
 networks:
   pfa-net:
 
 volumes:
   pfa_db_data:
+
+
+
 
